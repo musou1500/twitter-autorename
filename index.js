@@ -13,23 +13,25 @@ client.get('account/verify_credentials', function(err, user) {
   });
 })
 
-function onError(err) {}
+function onError(err) {
+  console.log(JSON.strigify(err));
+}
 
 function onData(event) {
   const matches = /([^\s　]+)になりたい/.exec(event.text);
-  const replyTargets = getReplyTargets(event);
   if (event.user.screen_name == 'musou1500' && matches) {
-    changeNameAndNotify(matches[1]);
+    changeNameAndNotify(event, matches[1]);
   } else if (event.text.includes('名前') && event.text.includes('変えて')) {
-    getRandomName().then(changeNameAndNotify);
+    getRandomName().then(event, changeNameAndNotify);
   }
 }
 
-function changeNameAndNotify(newName) {
-  client.post('account/update_profile', { name: name }, () => {
+function changeNameAndNotify(tweet, newName) {
+  const replyTargets = getReplyTargets(tweet);
+  client.post('account/update_profile', { name: newName }, () => {
     client.post('statuses/update', {
-      status: `${replyTargets} ${name}になった`,
-      in_reply_to_status_id: event.id_str
+      status: `${replyTargets} ${newName}になった`,
+      in_reply_to_status_id: tweet.id_str
     });
   });
 }
